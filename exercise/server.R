@@ -1,5 +1,11 @@
 library(shiny)
 
+Samplesize = function(Sig,p,X) {
+  Z = qnorm(1-Sig/2)
+  n = p*(1-p)*Z^2/X^2
+  n
+}
+
 Samplesize_OR = function(alpha,power,OR,r,p0,corr=FALSE) {
   Za=qnorm(1-alpha/2)
   Zb=qnorm(power)
@@ -19,19 +25,26 @@ Samplesize_OR = function(alpha,power,OR,r,p0,corr=FALSE) {
 shinyServer(function(input, output) {
   
   output$text1 = renderText({
-    "Sample size without continuity correction:"
+    if (input$method=="rate") {
+      N = Samplesize(Sig = input$Sig,p = input$p, X = input$X)      
+      return(paste("We need",round(N),"samples for this sampling."))
+    }
+    if (input$method=="cc") {"Sample size without continuity correction:"}
   })
   
   output$text2 = renderText({
-    Samplesize_OR(alpha=input$alpha,power=input$power,OR=input$OR,r=input$r,p0=input$p0)
+    if (input$method=="rate") {return(NULL)}
+    if (input$method=="cc") {Samplesize_OR(alpha=input$alpha,power=input$power,OR=input$OR,r=input$r,p0=input$p0)}
   })
   
   output$text3 = renderText({
-    "Sample size with continuity correction:"
+    if (input$method=="rate") {return(NULL)}
+    if (input$method=="cc") {"Sample size with continuity correction:"}
   })
   
   output$text4 = renderText({
-    Samplesize_OR(alpha=input$alpha,power=input$power,OR=input$OR,r=input$r,p0=input$p0,corr=TRUE)
+    if (input$method=="rate") {return(NULL)}
+    if (input$method=="cc") {Samplesize_OR(alpha=input$alpha,power=input$power,OR=input$OR,r=input$r,p0=input$p0,corr=TRUE)}
   })
   
 })
